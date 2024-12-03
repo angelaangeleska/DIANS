@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/data")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 public class MarketDataController {
     private final MarketDataService marketDataService;
 
@@ -20,20 +20,17 @@ public class MarketDataController {
         this.marketDataService = marketDataService;
     }
 
-    // Base endpoint for /api/data
     @GetMapping("")
     public ResponseEntity<String> getDataBasePath() {
         return new ResponseEntity<>("Data endpoint is available", HttpStatus.OK);
     }
 
-    // Endpoint to get all data
     @GetMapping("/all")
     public ResponseEntity<List<MarketData>> getAllData() {
         List<MarketData> data = marketDataService.getAllData();
         return new ResponseEntity<>(data, HttpStatus.OK);
     }
 
-    // Endpoint to get data by ID
     @GetMapping("/{id}")
     public ResponseEntity<MarketData> getDataById(@PathVariable(value = "id") Long id) {
         Optional<MarketData> data = marketDataService.getDataById(id);
@@ -41,14 +38,12 @@ public class MarketDataController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    // Endpoint to create new data (POST)
     @PostMapping("/create")
     public ResponseEntity<MarketData> createData(@RequestBody MarketData data) {
         MarketData createdData = marketDataService.saveData(data);
         return new ResponseEntity<>(createdData, HttpStatus.CREATED);
     }
 
-    // Endpoint to update data (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<MarketData> updateData(@PathVariable(value = "id") Long id, @RequestBody MarketData dataDetails) {
         Optional<MarketData> dataOptional = marketDataService.getDataById(id);
@@ -71,7 +66,6 @@ public class MarketDataController {
         return new ResponseEntity<>(data, HttpStatus.OK);
     }
 
-    // Endpoint to delete data (DELETE)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteData(@PathVariable(value = "id") Long id) {
         Optional<MarketData> data = marketDataService.getDataById(id);

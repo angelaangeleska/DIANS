@@ -1,5 +1,6 @@
 package com.example.project1.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,7 @@ public class MarketParticipant {
     @Column(name = "last_updated")
     private LocalDate lastUpdated;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "company", fetch = FetchType.EAGER)
     private List<MarketData> historicalData;
 

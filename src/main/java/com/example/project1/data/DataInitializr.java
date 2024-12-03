@@ -23,23 +23,28 @@ public class DataInitializr {
     private final MarketDataRepository marketDataRepository;
 
     @PostConstruct
-    private void initializeData() throws IOException, ParseException {
-        long startTime = System.nanoTime();
-        Pipe<List<MarketParticipant>> pipe = new Pipe<>();
-        pipe.addFilter(new Filter1(marketParticipantRepository));
-        pipe.addFilter(new Filter2(marketParticipantRepository, marketDataRepository));
-        pipe.addFilter(new Filter3(marketParticipantRepository, marketDataRepository));
-        pipe.runFilter(null);
-        long endTime = System.nanoTime();
-        long durationInMillis = (endTime - startTime) / 1_000_000;
+    private void initializeData() {
+        if (marketParticipantRepository.count() > 0) {
+            System.out.println("Database already populated, skipping initialization");
+            return;
+        }
 
-        long hours = durationInMillis / 3_600_000;
-        long minutes = (durationInMillis % 3_600_000) / 60_000;
-        long seconds = (durationInMillis % 60_000) / 1_000;
+        try {
+            long startTime = System.nanoTime();
+            Pipe<List<MarketParticipant>> pipe = new Pipe<>();
+            pipe.addFilter(new Filter1(marketParticipantRepository));
+            pipe.addFilter(new Filter2(marketParticipantRepository, marketDataRepository));
+            pipe.addFilter(new Filter3(marketParticipantRepository, marketDataRepository));
+            pipe.runFilter(null);
+            long endTime = System.nanoTime();
+            long durationInMillis = (endTime - startTime) / 1_000_000;
 
-        System.out.printf("Total time for all filters to complete: %02d hours, %02d minutes, %02d seconds%n",
-                hours, minutes, seconds);
-
+            System.out.printf("Total time for all filters to complete: %02d hours, %02d minutes, %02d seconds%n",
+                    durationInMillis / 3_600_000,
+                    (durationInMillis % 3_600_000) / 60_000,
+                    (durationInMillis % 60_000) / 1_000);
+        } catch (Exception e) {
+            System.err.println("Error during data initialization: " + e.getMessage());
+        }
     }
-
 }

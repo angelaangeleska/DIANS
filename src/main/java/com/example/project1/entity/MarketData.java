@@ -1,5 +1,6 @@
 package com.example.project1.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,6 +44,7 @@ public class MarketData {
     @Column(name = "total_turnover")
     private Integer totalTurnover;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "company_id")
     private MarketParticipant company;
