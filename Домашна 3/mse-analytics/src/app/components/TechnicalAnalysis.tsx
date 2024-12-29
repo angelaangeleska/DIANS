@@ -87,7 +87,6 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
     });
     const [loading, setLoading] = useState<boolean>(true);
 
-    // Group data by timeframe
     const groupDataByTimeframe = (data: HistoricalData[]): HistoricalData[] => {
         if (timeframe === 'daily') return data;
 
@@ -98,7 +97,7 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
             if (timeframe === 'weekly') {
                 periodStart = new Date(date);
                 periodStart.setDate(date.getDate() - date.getDay());
-            } else { // monthly
+            } else {
                 periodStart = new Date(date.getFullYear(), date.getMonth(), 1);
             }
 
@@ -123,7 +122,6 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
         }, []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     };
 
-    // Calculate SMA
     const calculateSMA = (prices: number[], period: number): (number | null)[] => {
         return prices.map((_, index) => {
             if (index < period - 1) return null;
@@ -132,7 +130,6 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
         });
     };
 
-    // Calculate EMA
     const calculateEMA = (prices: number[], period: number): number[] => {
         const multiplier = 2 / (period + 1);
         const ema = [prices[0]];
@@ -143,7 +140,6 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
         return ema;
     };
 
-    // Calculate RSI
     const calculateRSI = (prices: number[], period: number = 14): (number | null)[] => {
         const changes = prices.map((value, index) =>
             index === 0 ? 0 : value - prices[index - 1]
@@ -169,7 +165,6 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
         return rsi;
     };
 
-    // Calculate Stochastic Oscillator
     const calculateStochastic = (data: HistoricalData[], period: number = 14): { k: number[], d: number[] } => {
         const k = data.map((_, index) => {
             if (index < period - 1) return 0;
@@ -186,7 +181,6 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
         return { k, d };
     };
 
-    // Calculate MACD
     const calculateMACD = (prices: number[]): { line: number[], signal: number[], histogram: number[] } => {
         const ema12 = calculateEMA(prices, 12);
         const ema26 = calculateEMA(prices, 26);
@@ -197,7 +191,6 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
         return { line: macdLine, signal: signalLine, histogram };
     };
 
-    // Calculate Williams %R
     const calculateWilliamsR = (data: HistoricalData[], period: number = 14): number[] => {
         return data.map((_, index) => {
             if (index < period - 1) return 0;
@@ -211,7 +204,6 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
         });
     };
 
-    // Calculate Rate of Change (ROC)
     const calculateROC = (prices: number[], period: number = 12): number[] => {
         return prices.map((price, index) => {
             if (index < period) return 0;
@@ -220,12 +212,10 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
         });
     };
 
-    // Get trading signal
     const getTradingSignal = (): string => {
         let buySignals = 0;
         let sellSignals = 0;
 
-        // Moving Averages Signals
         if (technicalIndicators.sma20 && technicalIndicators.sma50) {
             if (technicalIndicators.sma20 > technicalIndicators.sma50) buySignals++;
             else sellSignals++;
@@ -236,25 +226,21 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
             else sellSignals++;
         }
 
-        // RSI Signals
         if (technicalIndicators.rsi) {
             if (technicalIndicators.rsi > 70) sellSignals++;
             else if (technicalIndicators.rsi < 30) buySignals++;
         }
 
-        // Stochastic Signals
         if (technicalIndicators.stochasticK && technicalIndicators.stochasticD) {
             if (technicalIndicators.stochasticK > 80) sellSignals++;
             else if (technicalIndicators.stochasticK < 20) buySignals++;
         }
 
-        // MACD Signal
         if (technicalIndicators.macdLine && technicalIndicators.macdSignal) {
             if (technicalIndicators.macdLine > technicalIndicators.macdSignal) buySignals++;
             else sellSignals++;
         }
 
-        // Make final decision
         if (buySignals > sellSignals + 1) return 'BUY';
         if (sellSignals > buySignals + 1) return 'SELL';
         return 'HOLD';
@@ -265,7 +251,6 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
             const timeframeData = groupDataByTimeframe(historicalData);
             const prices = timeframeData.map(d => d.averagePrice);
 
-            // Calculate all technical indicators
             const sma20 = calculateSMA(prices, 20);
             const sma50 = calculateSMA(prices, 50);
             const sma200 = calculateSMA(prices, 200);
@@ -277,7 +262,6 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
             const williamsR = calculateWilliamsR(timeframeData);
             const roc = calculateROC(prices);
 
-            // Update technical indicators
             setTechnicalIndicators({
                 sma20: sma20[sma20.length - 1],
                 sma50: sma50[sma50.length - 1],
@@ -294,7 +278,6 @@ const TechnicalAnalysis: React.FC<Props> = ({ historicalData, selectedCompany })
                 roc: roc[roc.length - 1]
             });
 
-            // Prepare chart data
             const newChartData: ChartData[] = timeframeData.map((item, index) => ({
                 date: new Date(item.date).toLocaleDateString(),
                 price: item.averagePrice,
