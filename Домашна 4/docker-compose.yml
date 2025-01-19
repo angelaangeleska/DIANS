@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mse-backend
+    ports:
+      - "8090:8090"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/project1
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=radapasvort123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_SHOW_SQL=true
+    depends_on:
+      - db
+    networks:
+      - mse-network
+    volumes:
+      - ./src:/app/src
+      - ~/.m2:/root/.m2
+
+  frontend:
+    build:
+      context: ./mse-analytics
+      dockerfile: Dockerfile
+    container_name: mse-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8090
+    volumes:
+      - ./mse-analytics/src:/app/src
+      - ./mse-analytics/public:/app/public
+    depends_on:
+      - backend
+    networks:
+      - mse-network
+
+  db:
+    image: postgres:15-alpine
+    container_name: mse-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=project1
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=radapasvort123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mse-network
+
+volumes:
+  postgres_data:
+    name: mse-postgres-data
+
+networks:
+  mse-network:
+    name: mse-network
+    driver: bridge
